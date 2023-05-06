@@ -38,7 +38,9 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     var dbHelper = DatabaseHelper();
-    dbHelper.todos().then((values) => setState(() => {todos = values}));
+    if (todos.isEmpty) {
+      dbHelper.todos().then((values) => setState(() => {todos = values}));
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text("My To-Dos"),
@@ -72,10 +74,11 @@ class _MainAppState extends State<MainApp> {
             trailing: IconButton(
               icon: const Icon(Icons.delete),
               color: Colors.redAccent,
-              onPressed: () {
+              onPressed: () async {
+                //Removing data directly one by one is expensive and should be avoided at later stages
+                await dbHelper.deleteTodo(todos[index ~/ 2].id);
                 setState(() {
-                  //todos.remove(todos[index ~/ 2]);
-                  dbHelper.deleteTodo(todos[index ~/ 2].id);
+                  todos.remove(todos[index ~/ 2]);
                 });
               },
             ),
@@ -90,9 +93,10 @@ class _MainAppState extends State<MainApp> {
             MaterialPageRoute(builder: (context) => const InputScreen()),
           );
           if (result.title != '') {
+            //Removing data directly one by one is expensive and should be avoided at later stages
+            await dbHelper.insertTodo(result);
             setState(() {
-              //todos.add(result);
-              dbHelper.insertTodo(result);
+              todos.add(result);
             });
           }
         },

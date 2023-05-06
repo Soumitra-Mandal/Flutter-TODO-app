@@ -46,12 +46,23 @@ class DatabaseHelper {
   }
 
   Future<void> deleteTodo(String id) async {
-    final db = await database;
+    final Database db = await database;
 
     await db.delete(
       'todos',
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+// Use this later to enhance response time by limiting calls to DB
+  void commitToDb(List<Todo> data) async {
+    final Database db = await database;
+    Batch batch = db.batch();
+    for (final item in data) {
+      batch.insert('todos', item.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace);
+    }
+    await batch.commit(noResult: true);
   }
 }
