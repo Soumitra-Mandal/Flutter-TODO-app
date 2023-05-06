@@ -28,6 +28,8 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> {
   List<Todo> todos = [];
+  String sortBy = 'sort by date';
+  List<String> sortingItems = ['sort by date', 'sort by priority'];
 
   final List<Icon> icons = const [
     Icon(Icons.arrow_upward_rounded, color: Colors.red),
@@ -45,6 +47,39 @@ class _MainAppState extends State<MainApp> {
       appBar: AppBar(
         title: const Text("My To-Dos"),
         backgroundColor: Colors.redAccent,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 15, 0),
+            child: DropdownButton(
+              dropdownColor: Colors.black,
+              style: const TextStyle(color: Colors.white),
+              value: sortBy,
+              items: sortingItems.map((String items) {
+                return DropdownMenuItem(
+                  value: items,
+                  child: Text(
+                    items,
+                    style: const TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                );
+              }).toList(),
+              icon: const Icon(
+                Icons.sort,
+                color: Colors.white,
+              ),
+              onChanged: (String? value) => {
+                setState(() {
+                  sortBy = value!;
+                  todos.sort((a, b) => sortBy == "sort by date"
+                      ? a.createdOn.compareTo(b.createdOn)
+                      : a.priority.compareTo(b.priority));
+                })
+              },
+            ),
+          )
+        ],
       ),
       body: ListView.builder(
         itemCount: todos.length * 2,
