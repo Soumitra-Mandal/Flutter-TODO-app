@@ -41,7 +41,7 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     var dbHelper = DatabaseHelper();
     if (todos.isEmpty) {
-      dbHelper.todos().then((values) => setState(() => {todos = values}));
+      dbHelper.todos().then((values) => setState(() => todos = values));
     }
     return Scaffold(
       appBar: AppBar(
@@ -84,6 +84,7 @@ class _MainAppState extends State<MainApp> {
       body: ListView.builder(
         itemCount: todos.length * 2,
         itemBuilder: (context, index) {
+          Todo item = todos[index ~/ 2];
           if (index % 2 != 0) {
             return const Divider(
               height: 10,
@@ -91,31 +92,44 @@ class _MainAppState extends State<MainApp> {
               color: Colors.grey,
             );
           }
-          return ListTile(
-            leading: icons[todos[index ~/ 2].priority],
-            title: Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: Text(todos[index ~/ 2].title),
-            ),
-            subtitle: Text(todos[index ~/ 2].createdOn),
-            onTap: () => {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => DetailsScreen(
-                            todo: todos[index ~/ 2],
-                          ))),
+          return Dismissible(
+            key: Key(item.title),
+            onDismissed: (DismissDirection dir) async {
+              await dbHelper.deleteTodo(item.id);
+              setState(() {
+                todos.remove(item);
+              });
             },
-            trailing: IconButton(
-              icon: const Icon(Icons.delete),
-              color: Colors.redAccent,
-              onPressed: () async {
-                //Removing data directly one by one is expensive and should be avoided at later stages
-                await dbHelper.deleteTodo(todos[index ~/ 2].id);
-                setState(() {
-                  todos.remove(todos[index ~/ 2]);
-                });
+            background: Container(
+              color: Colors.red,
+              child: const Icon(Icons.delete),
+            ),
+            child: ListTile(
+              leading: icons[item.priority],
+              title: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: Text(item.title),
+              ),
+              subtitle: Text(item.createdOn),
+              onTap: () => {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => DetailsScreen(
+                              todo: item,
+                            ))),
               },
+              trailing: IconButton(
+                icon: const Icon(Icons.delete),
+                color: Colors.redAccent,
+                onPressed: () async {
+                  //Removing data directly one by one is expensive and should be avoided at later stages
+                  await dbHelper.deleteTodo(item.id);
+                  setState(() {
+                    todos.remove(item);
+                  });
+                },
+              ),
             ),
           );
         },

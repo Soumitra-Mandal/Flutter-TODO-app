@@ -89,7 +89,7 @@ class _InputScreenState extends State<InputScreen> {
                         }).toList(),
                         onChanged: (String? newvalue) => {
                               setState(() =>
-                                  {priority = priorities.indexOf(newvalue!)})
+                                  priority = priorities.indexOf(newvalue!))
                             }),
                   ),
                   Padding(
